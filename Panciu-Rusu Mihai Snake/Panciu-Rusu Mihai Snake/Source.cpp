@@ -8,6 +8,7 @@ using namespace std;
 #define LUNGIME_HARTA 25
 
 int harta[LUNGIME_HARTA][LATIME_HARTA];
+int sfarsitJoc = 0;
 
 void initializare_harta()
 {
@@ -18,6 +19,7 @@ void initializare_harta()
 
 void afisare_harta()
 {
+	system("cls");
 	for (int i = 0; i < LUNGIME_HARTA; ++i)
 	{
 		for (int j = 0; j < LATIME_HARTA; ++j)
@@ -33,8 +35,16 @@ void afisare_harta()
 	}
 }
 
+void joc()
+{
+	while (!sfarsitJoc)
+	{
+		initializare_harta();
+		afisare_harta();
+	}
+}
+
 void main()
 {
-	initializare_harta();
-	afisare_harta();
+	joc();
 }
