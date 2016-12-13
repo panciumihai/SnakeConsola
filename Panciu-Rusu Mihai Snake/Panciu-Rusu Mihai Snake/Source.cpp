@@ -125,10 +125,14 @@ void schimba_directia(sarpe& s)
 	{
 		switch (_getch())
 		{
-		case 'w':s.directie=1; break;
-		case 'a':s.directie=4; break;
-		case 's':s.directie=3; break;
-		case 'd':s.directie=2; break;
+			case 'w':if (s.directie != 3)
+				s.directie=1; break;
+			case 'a':if (s.directie != 2)
+				s.directie=4; break;
+			case 's':if (s.directie != 1)
+				s.directie=3; break;
+			case 'd':if (s.directie != 4)
+				s.directie=2; break;
 		}
 	}
 }
@@ -183,6 +187,21 @@ void redimensionare_consola()
 	MoveWindow(consola, dimensiuneOriginala.left, dimensiuneOriginala.top, 1000, 660, TRUE); //setam dimensiunea consolei 1000,660
 }
 
+void coliziune(sarpe s)
+{
+	nod* c = s.cap;
+	c = c->urm;
+	while (c)
+	{
+		if (c->x == s.cap->x && c->y == s.cap->y)
+		{
+			sfarsitJoc = 1;
+			break;
+		}
+		c = c->urm;
+	}
+}
+
 void restabileste_setari()
 {
 	HWND consola = GetConsoleWindow();
@@ -233,9 +252,11 @@ void joc()
 		colectare_fruct(sarpe1);
 		initializare_harta();
 		misca_sarpe(sarpe1);
+		coliziune(sarpe1);
 		afisare_fruct();
 		afisare_sarpe(sarpe1);
 		afisare_harta();
+		
 		Sleep(50);
 	}
 }
