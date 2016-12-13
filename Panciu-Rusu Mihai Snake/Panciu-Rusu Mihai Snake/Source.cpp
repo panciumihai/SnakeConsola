@@ -28,6 +28,7 @@ struct sarpe {
 
 sarpe sarpe1;
 sarpe sarpe2;
+RECT dimensiuneOriginala;
 
 void initializare_harta()
 {
@@ -126,7 +127,7 @@ void setare_font(int dimensiuneX,int dimensiuneY)
 }
 
 
-void stergeEcran()			//pentru a elimina intreruperile scrierii (stergere eficienta)
+void sterge_ecran()			//pentru a elimina intreruperile scrierii (stergere eficienta)
 {
 	HANDLE h;
 	COORD pozitie;
@@ -138,10 +139,31 @@ void stergeEcran()			//pentru a elimina intreruperile scrierii (stergere eficien
 	SetConsoleCursorPosition(h, pozitie);
 }
 
+void ascunde_cursor()
+{
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO info;
+	info.dwSize = 100;
+	info.bVisible = FALSE;
+	SetConsoleCursorInfo(h, &info);
+}
+
+void redimensionare_consola()
+{
+	HWND consola = GetConsoleWindow();
+	GetWindowRect(consola, &dimensiuneOriginala);											 //salvam dimensiunea originala a consolei
+	MoveWindow(consola, dimensiuneOriginala.left, dimensiuneOriginala.top, 1000, 660, TRUE); //setam dimensiunea consolei 1000,660
+}
+
+void restabileste_setari()
+{
+	HWND consola = GetConsoleWindow();
+	MoveWindow(consola, dimensiuneOriginala.left, dimensiuneOriginala.top, dimensiuneOriginala.right, dimensiuneOriginala.bottom, TRUE);
+}
 
 void afisare_harta()
 {
-	stergeEcran();
+	sterge_ecran();
 	for (int i = 0; i < LUNGIME_HARTA; ++i)
 	{
 		for (int j = 0; j < LATIME_HARTA; ++j)
@@ -188,7 +210,9 @@ void joc()
 
 void main()
 {
-	setare_font(12,12);
+	setare_font(12, 12);
+	ascunde_cursor();
+	redimensionare_consola();
 	dezvoltare_sarpe(sarpe1);
 	dezvoltare_sarpe(sarpe1);
 	dezvoltare_sarpe(sarpe1);
