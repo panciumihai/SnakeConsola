@@ -26,8 +26,16 @@ struct sarpe {
 	nod* coada;
 };
 
+struct fruct {
+	int x;
+	int y;
+	int tip = 10;
+};
+
 sarpe sarpe1;
 sarpe sarpe2;
+fruct f;
+
 RECT dimensiuneOriginala;
 
 void initializare_harta()
@@ -35,6 +43,18 @@ void initializare_harta()
 	for (int i = 0; i < LUNGIME_HARTA; ++i)
 		for (int j = 0; j < LATIME_HARTA; ++j)
 			harta[i][j] = 0;
+}
+
+void generare_fruct(int tip)
+{
+	f.x = rand() % LATIME_HARTA;
+	f.y = rand() % LUNGIME_HARTA;
+	f.tip = tip;
+}
+
+void afisare_fruct()
+{
+	harta[f.y][f.x] = f.tip;
 }
 
 void dezvoltare_sarpe(sarpe& s)
@@ -62,6 +82,15 @@ void dezvoltare_sarpe(sarpe& s)
 		fragment->prec = s.coada;
 		s.coada->urm = fragment;
 		s.coada = fragment;
+	}
+}
+
+void colectare_fruct(sarpe& s)
+{
+	if (s.cap->x == f.x && s.cap->y == f.y)
+	{
+		dezvoltare_sarpe(s);
+		generare_fruct(10);
 	}
 }
 
@@ -171,6 +200,7 @@ void afisare_harta()
 			{
 			case 0:printf("%c", (char)(32)); break;
 			case 1:printf("%c", (char)(219)); break;
+			case 10:printf("%c", (char)(210)); break;
 			default:printf("");
 				break;
 			}
@@ -199,8 +229,11 @@ void joc()
 						sarpe1.directie = 2;
 		*/
 		schimba_directia(sarpe1);
+
+		colectare_fruct(sarpe1);
 		initializare_harta();
 		misca_sarpe(sarpe1);
+		afisare_fruct();
 		afisare_sarpe(sarpe1);
 		afisare_harta();
 		Sleep(50);
@@ -209,9 +242,11 @@ void joc()
 
 void main()
 {
-	setare_font(12, 12);
+	setare_font(14, 12);
 	ascunde_cursor();
 	redimensionare_consola();
+
+	generare_fruct(10);
 	dezvoltare_sarpe(sarpe1);
 	dezvoltare_sarpe(sarpe1);
 	dezvoltare_sarpe(sarpe1);
