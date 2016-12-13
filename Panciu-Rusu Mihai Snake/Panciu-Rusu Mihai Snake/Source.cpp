@@ -126,7 +126,6 @@ void setare_font(int dimensiuneX,int dimensiuneY)
 	SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
 }
 
-
 void sterge_ecran()			//pentru a elimina intreruperile scrierii (stergere eficienta)
 {
 	HANDLE h;
@@ -199,7 +198,7 @@ void joc()
 					if (sarpe1.cap->y == 5 && sarpe1.directie == 1)
 						sarpe1.directie = 2;
 		*/
-
+		schimba_directia(sarpe1);
 		initializare_harta();
 		misca_sarpe(sarpe1);
 		afisare_sarpe(sarpe1);
