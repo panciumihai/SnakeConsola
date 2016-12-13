@@ -118,7 +118,7 @@ void setare_font(int dimensiuneX,int dimensiuneY)
 	CONSOLE_FONT_INFOEX cfi;
 	cfi.cbSize = sizeof(cfi);
 	cfi.nFont = 0;
-	cfi.dwFontSize.X = dimensiuneX;                   // Latime
+	cfi.dwFontSize.X = dimensiuneX;										 // Latime
 	cfi.dwFontSize.Y = dimensiuneY;										 // Inaltime
 	cfi.FontFamily = FF_DONTCARE;
 	cfi.FontWeight = FW_NORMAL;
@@ -126,9 +126,22 @@ void setare_font(int dimensiuneX,int dimensiuneY)
 }
 
 
+void stergeEcran()			//pentru a elimina intreruperile scrierii (stergere eficienta)
+{
+	HANDLE h;
+	COORD pozitie;
+
+	h = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	pozitie.X = 0;
+	pozitie.Y = 0;
+	SetConsoleCursorPosition(h, pozitie);
+}
+
+
 void afisare_harta()
 {
-	system("cls");
+	stergeEcran();
 	for (int i = 0; i < LUNGIME_HARTA; ++i)
 	{
 		for (int j = 0; j < LATIME_HARTA; ++j)
