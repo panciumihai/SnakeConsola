@@ -113,6 +113,19 @@ void afisare_sarpe(sarpe s)
 	}
 }
 
+void setare_font(int dimensiuneX,int dimensiuneY)
+{
+	CONSOLE_FONT_INFOEX cfi;
+	cfi.cbSize = sizeof(cfi);
+	cfi.nFont = 0;
+	cfi.dwFontSize.X = dimensiuneX;                   // Latime
+	cfi.dwFontSize.Y = dimensiuneY;										 // Inaltime
+	cfi.FontFamily = FF_DONTCARE;
+	cfi.FontWeight = FW_NORMAL;
+	SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
+}
+
+
 void afisare_harta()
 {
 	system("cls");
@@ -162,6 +175,7 @@ void joc()
 
 void main()
 {
+	setare_font(12,12);
 	dezvoltare_sarpe(sarpe1);
 	dezvoltare_sarpe(sarpe1);
 	dezvoltare_sarpe(sarpe1);
