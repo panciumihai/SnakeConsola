@@ -11,7 +11,12 @@ using namespace std;
 #define LATIME_HARTA 50
 #define INALTIME_HARTA 50
 
+HANDLE hConsole;
+CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+WORD saved_attributes;
+
 int sfarsitJoc = 0;
+int joc = 0;
 
 struct tipHarta {
 	int info;
@@ -52,6 +57,23 @@ RECT dimensiuneOriginala;
 
 int contor=0;
 
+void sterge_ecran(int x = 0, int y = 0)			//pentru a elimina intreruperile scrierii (stergere eficienta)
+{
+	HANDLE h;
+	COORD pozitie;
+
+	h = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	pozitie.X = x;
+	pozitie.Y = y;
+	SetConsoleCursorPosition(h, pozitie);
+}
+
+void culoare(unsigned short c)
+{
+	SetConsoleTextAttribute(hConsole, c);
+}
+
 void initializare_harta()
 {
 	for (int i = 0; i < INALTIME_HARTA; ++i)
@@ -86,6 +108,42 @@ void initializare_harta()
 						}
 }
 
+void completare_harta(int x, int y)
+{
+	if (y == 0)
+	{
+		harta[y][x].info = 2;
+		harta[y][x].caracter = (char)194;
+	}
+	else
+		if (y == INALTIME_HARTA - 1)
+		{
+			harta[y][x].info = 4;
+			harta[y][x].caracter = (char)193;
+		}
+		else
+			if (x == 0)
+			{
+				harta[y][x].info = 1;
+				harta[y][x].caracter = (char)195;
+			}
+			else
+				if (x == LATIME_HARTA - 1)
+				{
+					harta[y][x].info = 3;
+					harta[y][x].caracter = (char)180;
+				}
+				else
+				{
+					harta[y][x].info = 0;
+					harta[y][x].caracter = (char)197;
+				}
+
+	sterge_ecran(x, y);
+	culoare(1);
+	printf("%c", harta[y][x].caracter);
+}
+
 void generare_fruct(int tip)
 {
 	random_device rd;
@@ -93,6 +151,7 @@ void generare_fruct(int tip)
 	mt19937 gen(rd());
 	uniform_int_distribution<> randX(1, LATIME_HARTA - 2);
 	uniform_int_distribution<> randY(1, INALTIME_HARTA - 2);
+
 	f.x = randX(gen);
 	f.y = randY(gen);
 
@@ -110,6 +169,9 @@ void afisare_fruct()
 {
 	harta[f.y][f.x].info = f.tip;
 	harta[f.y][f.x].caracter = (char)178;
+	sterge_ecran(f.x, f.y);
+	culoare(14);
+	printf("M");
 }
 
 void dezvoltare_sarpe(sarpe& s)
@@ -148,6 +210,7 @@ void colectare_fruct(sarpe& s)
 	if (s.cap->x == f.x && s.cap->y == f.y)
 	{
 		dezvoltare_sarpe(s);
+		
 		generare_fruct(10);
 	}
 }
@@ -180,6 +243,9 @@ int coliziune(sarpe s, int supraPunere = 0)				//daca acesta se loveste de sine 
 void misca_sarpe(sarpe& s)
 {
 	nod* c = s.coada;
+
+	completare_harta(c->x, c->y);
+
 	while (c->prec)
 	{
 		c->x = c->prec->x;
@@ -229,11 +295,17 @@ void schimba_directia(sarpe& s)
 void afisare_sarpe(sarpe s)
 {
 	nod* c = s.cap;
+	if (s.numar_sarpe == 1)
+		culoare(10);
+	else
+		culoare(12);
+
 	while (c)
 	{
 		harta[c->y][c->x].caracter = c->caracter;
-
 		harta[c->y][c->x].info = c->orientare;
+		sterge_ecran(c->x, c->y);
+		printf("%c", c->caracter);
 		c = c->urm;
 	}
 }
@@ -248,18 +320,6 @@ void setare_font(int dimensiuneX,int dimensiuneY)
 	cfi.FontFamily = FF_DONTCARE;
 	cfi.FontWeight = FW_NORMAL;
 	SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
-}
-
-void sterge_ecran()			//pentru a elimina intreruperile scrierii (stergere eficienta)
-{
-	HANDLE h;
-	COORD pozitie;
-
-	h = GetStdHandle(STD_OUTPUT_HANDLE);
-
-	pozitie.X = 0;
-	pozitie.Y = 0;
-	SetConsoleCursorPosition(h, pozitie);
 }
 
 void ascunde_cursor()
@@ -310,7 +370,7 @@ int predictie_coliziune(sarpe s, int x=0,int y=0)
 	return 0;
 }
 
-void bot_sarpe(sarpe& s, fruct fct)
+void bot_sarpe(sarpe& s, fruct fct, int stop=0)
 {	
 	// ETAPA 1		salveaza opusul positizie din care vine pentru a nu se intoarce 180 de grate
 	int d[5] = {0,0,0,0,0};
@@ -324,16 +384,17 @@ void bot_sarpe(sarpe& s, fruct fct)
 	if (s.cap->x < fct.x && s.directie != 4)
 		s.directie = 2;
 	else
-	if (s.cap->x > fct.x && s.directie != 2)
-		s.directie = 4;
-	else
-	if (s.cap->y < fct.y && s.directie != 1)
-		s.directie = 3;
-	else
-	if (s.cap->y > fct.y && s.directie != 3)
-		s.directie = 1;
+		if (s.cap->x > fct.x && s.directie != 2)
+			s.directie = 4;
+		else
+			if (s.cap->y < fct.y && s.directie != 1)
+				s.directie = 3;
+			else
+				if (s.cap->y > fct.y && s.directie != 3)
+					s.directie = 1;
 
 	++d[s.directie];
+
 	int p = predictie_coliziune(s);
 
 
@@ -395,18 +456,9 @@ void bot_sarpe(sarpe& s, fruct fct)
 			}
 	}
 
-}
+	if (predictie_coliziune(s) && stop<4)
+		bot_sarpe(s, f,stop+1);
 
-HANDLE hConsole;
-CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-WORD saved_attributes;
-
-void tiparie_element(char c, int culoare)
-{
-	//SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
-
-	printf("%c", c);
-	//SetConsoleTextAttribute(hConsole, saved_attributes);
 }
 
 void restabileste_setari()
@@ -418,15 +470,11 @@ void restabileste_setari()
 void afisare_harta()
 {
 	sterge_ecran();
-	//system("COLOR 0A");
 	for (int i = 0; i < INALTIME_HARTA; ++i)
 	{
 		for (int j = 0; j < LATIME_HARTA; ++j)
 		{
-			int culoare = 0;
-			if (harta[i][j].caracter >= 180 && harta[i][j].caracter <= 197)
-				culoare = 23;
-			
+			culoare(1);
 			printf("%c", harta[i][j].caracter);
 		}
 		printf("\n");
@@ -434,57 +482,160 @@ void afisare_harta()
 	printf("Contor: %d", contor);
 }
 
-void joc()
+void joc_singur()
 {
-	int i = 0;
 	while (!sfarsitJoc)
 	{
 		schimba_directia(sarpe1);
-		bot_sarpe(sarpe2,f);
+
+		colectare_fruct(sarpe1);
+
+		misca_sarpe(sarpe1);
+
+		initializare_harta();
+
+		afisare_fruct();
+		afisare_sarpe(sarpe1);
+		afisare_harta();
+		
+		Sleep(10);
+	}
+}
+
+void joc_dublu()
+{
+	while (!sfarsitJoc)
+	{
+		schimba_directia(sarpe1);
+
+		bot_sarpe(sarpe2, f);
 
 		colectare_fruct(sarpe1);
 		colectare_fruct(sarpe2);
 
 		misca_sarpe(sarpe1);
 		misca_sarpe(sarpe2);
+
 		initializare_harta();
-		
+
 		afisare_fruct();
 		afisare_sarpe(sarpe1);
 		afisare_sarpe(sarpe2);
-		afisare_harta();
-		
+
 		Sleep(60);
 	}
 }
 
-void main()
+void start_joc()
 {
-	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (joc == 1)
+	{
+		sarpe1.numar_sarpe = 1;
 
+		generare_fruct(10);
+		dezvoltare_sarpe(sarpe1);
+		dezvoltare_sarpe(sarpe1);
+		dezvoltare_sarpe(sarpe1);
+
+		afisare_harta();
+
+		joc_singur();
+	}
+	else
+	{
+		sarpe1.numar_sarpe = 1;
+		sarpe2.numar_sarpe = 2;
+
+		generare_fruct(10);
+		dezvoltare_sarpe(sarpe1);
+		dezvoltare_sarpe(sarpe1);
+		dezvoltare_sarpe(sarpe1);
+
+		dezvoltare_sarpe(sarpe2);
+		dezvoltare_sarpe(sarpe2);
+		dezvoltare_sarpe(sarpe2);
+		sarpe2.cap->x = 40;
+		sarpe2.cap->y = 5;
+		sarpe2.directie = 4;
+
+		initializare_harta();
+
+		afisare_harta();
+
+		joc_dublu();
+	}
+}
+
+void meniu()
+{
+
+}
+/*
+void craniu()
+{
+	printf("_______________________________________________________");
+	printf("	/ \");
+printf(" | Ha ha, you're dead                    |");
+printf("		\_________              _______________________________ /");
+	printf("	\_         __ / ___-------- - __");
+		printf("	\      _ / / \_");
+			printf("	\ / / \");
+	printf("	| / | _    _ \          \");
+				printf("	| | / / \ / \ | \");
+	printf("	| | || || || |");
+					printf("		| | | \_//\\_/ |           |        ");
+						printf("		| | | _ | (|| ) | _______ | |");
+							printf("	| | | || | _ / / |");
+								printf("	\ \ | _________ || \ / / /");
+									printf("	\ \_ | _ | _ | _ | _ | / | _ / ___ /");
+										printf("	\__>       _ _ / _ _ / |");
+											printf("	. | _ | _ | _ | _ | |");
+												printf("	| /");
+												printf("	| __________ /");
+
+}
+*/
+void main()
+{                                                                          
+
+	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
 	saved_attributes = consoleInfo.wAttributes;
 	
+	culoare(10);
+	printf("\n\n");
+	printf("     *********  *     *     *     *      *  ******                    \n"); culoare(9);
+	printf("     *       *  **    *    * *    *     *   *                         \n"); culoare(11);
+	printf("     *       *  * *   *   *   *   *    *    *                         \n"); culoare(15);
+	printf("     *       *  *  ** *  *     *  *   *     *                         \n"); culoare(14);
+	printf("     *          *    **  *     *  *  *      *                         \n"); culoare(13);
+	printf("     *          *     *  *     *  * * *     ******                    \n"); culoare(12);
+	printf("     *          *     *  *     *  **   *    *                         \n"); culoare(11);
+	printf("     *********  *     *  *******  *     *   *                         \n"); culoare(10);
+	printf("             *  *     *  *     *  *      *  *                         \n"); culoare(9);
+	printf("             *  *     *  *     *  *      *  *                         \n"); culoare(11);
+	printf("     *       *  *     *  *     *  *      *  *                         \n"); culoare(15);
+	printf("     *       *  *     *  *     *  *      *  *                         \n"); culoare(14);
+	printf("     *********  *     *  *     *  *      *  ******                    \n"); culoare(13);
+	printf("                                                                      \n"); culoare(12);
+
+	culoare(10);
+
+	printf("                                                                      \n");
+	printf("                                                                      \n");
+	printf("                >      SINGUR      <                                  \n"); culoare(11);
+	printf("                                                                      \n");
+	printf("                       CONTRA                                         \n"); culoare(12);
+	printf("                                                                      \n");
+	printf("                       IESIRE                                         \n");
 
 	setare_font(14, 12);
 	ascunde_cursor();
 	redimensionare_consola();
+	
+	Sleep(3000);
 
-	sarpe1.numar_sarpe = 1;
-	sarpe2.numar_sarpe = 2;
-
-	generare_fruct(10);
-	dezvoltare_sarpe(sarpe1);
-	dezvoltare_sarpe(sarpe1);
-	dezvoltare_sarpe(sarpe1);
-
-	dezvoltare_sarpe(sarpe2);
-	dezvoltare_sarpe(sarpe2);
-	dezvoltare_sarpe(sarpe2);
-	sarpe2.cap->x = 40;
-	sarpe2.cap->y = 5;
-	sarpe2.directie = 4;
-
-	joc();
+	joc = 2;
+	start_joc();
 }
