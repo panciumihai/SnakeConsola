@@ -15,6 +15,9 @@ sarpe sarpe1;
 sarpe sarpe2;
 fruct f;
 
+scoruri clasament[5];
+scoruri actual;
+
 int contor=0;
 
 void schimba_directia(sarpe& s)
@@ -37,7 +40,7 @@ void schimba_directia(sarpe& s)
 			pozitionare_cursor(0, 50);
 			printf("                                 ");
 			pozitionare_cursor(0, 0); break;
-		case 'b': //prima_pagina(sarpe1,sarpe2,joc);
+		case 'r': sfarsitJoc = 1;
 			break;
 		}
 	}
@@ -83,36 +86,39 @@ void joc_dublu()
 		afisare_fruct(harta, f);
 		afisare_sarpe(sarpe1, harta);
 		afisare_sarpe(sarpe2, harta);
+		if (sarpe1.cap->x == sarpe2.cap->x && sarpe1.cap->y == sarpe2.cap->y)
+			sfarsitJoc = 3;
 		actualizare_legenda(sarpe1,sarpe2);
 
 		Sleep(60);
 	}
 	pozitionare_cursor(0, 50);
+	joc = 0;
 }
 
 void start_joc()
 {
+	curata_ecran();
+	afisare_scor(clasament);
 	if (joc == 1)
 	{
-		sarpe1.numar_sarpe = 1;
-
 		generare_fruct(f, harta);
+
 		dezvoltare_sarpe(sarpe1);
 		dezvoltare_sarpe(sarpe1);
 		dezvoltare_sarpe(sarpe1);
 
 		initializare_harta(harta);
-		afisare_harta(harta);
 
+		afisare_harta(harta);
 		afisare_legenda(sarpe1, sarpe2);
+
 		joc_singur();
 	}
 	else
 	{
-		sarpe1.numar_sarpe = 1;
-		sarpe2.numar_sarpe = 2;
-
 		generare_fruct(f, harta);
+
 		dezvoltare_sarpe(sarpe1);
 		dezvoltare_sarpe(sarpe1);
 		dezvoltare_sarpe(sarpe1);
@@ -120,9 +126,6 @@ void start_joc()
 		dezvoltare_sarpe(sarpe2);
 		dezvoltare_sarpe(sarpe2);
 		dezvoltare_sarpe(sarpe2);
-		sarpe2.cap->x = 40;
-		sarpe2.cap->y = 5;
-		sarpe2.directie = 4;
 
 		initializare_harta(harta);
 
@@ -159,11 +162,21 @@ void meniu(int& joc)
 
 void prima_pagina(sarpe& s1, sarpe& s2, int& tipJoc)
 {
-	s1.cap = 0;
-	s1.coada = 0;
-	s2.cap = 0;
-	s2.cap = 0;
+	if (s1.cap)
+	{
+		s1.cap = 0;
+		delete s1.cap;
+		s1.lungime = 0;
+	}
+	if (s2.cap)
+	{
+		s2.cap = 0;
+		delete s2.cap;
+		s2.lungime = 0;
+	}
+
 	tipJoc = 1;
+	sfarsitJoc = 0;
 	afisare_meniu(tipJoc);
 
 	while (tipJoc)
@@ -199,7 +212,6 @@ printf("		\_________              _______________________________ /");
 */
 void main()
 {                                                                          
-
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
@@ -210,7 +222,20 @@ void main()
 	ascunde_cursor();
 	redimensionare_consola(dimensiuneOriginala);
 
-//	joc = 1;
-//	start_joc();
-	prima_pagina(sarpe1,sarpe2,joc);
+	sarpe1.numar_sarpe = 1;
+	sarpe2.numar_sarpe = 2;
+
+	importare_scor(clasament);
+	
+	while (!joc)
+	{
+		prima_pagina(sarpe1, sarpe2, joc);
+		if (sarpe1.lungime >= clasament[4].scor)
+		{
+			inregistrare_scor(actual, sarpe1);
+			actualizare_scor(clasament, actual);
+			salvare_scor(clasament);
+		}
+		curata_ecran();
+	}
 }

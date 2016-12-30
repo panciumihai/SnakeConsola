@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <conio.h>
 #include <Windows.h>
-#include <string>
 #include <ctime>
+#include <fstream>
+#include <string.h>
 
 #include <random>
 
@@ -27,7 +28,7 @@ struct nod {
 };
 
 struct sarpe {
-	int directie = 2;
+	int directie;
 	int lungime = 0;
 	int numar_sarpe;
 	nod* cap;
@@ -38,6 +39,11 @@ struct fruct {
 	int x;
 	int y;
 	int tip = 10;
+};
+
+struct scoruri {
+	char nume[15]="ANONIM";
+	unsigned short scor;
 };
 
 void pozitionare_cursor(int x = 0, int y = 0)			//pentru a elimina intreruperile scrierii (stergere eficienta)
@@ -70,13 +76,55 @@ void culoare(unsigned short c)
 	SetConsoleTextAttribute(hConsole, c);
 }
 
+void creare_chenar(int x1 = 0, int y1 = 0, int x2 = 0, int y2 = 0, int nrCuloare = 15)
+{
+	culoare(nrCuloare);
+	for (int i = y1; i <= y2; ++i)
+	{
+		pozitionare_cursor(x1, i);
+		printf("%c", (char)(186));
+		pozitionare_cursor(x2, i);
+		printf("%c", (char)(186));
+	}
+
+	for (int i = x1; i <= x2; ++i)
+	{
+		pozitionare_cursor(i, y1);
+		printf("%c", (char)(205));
+		pozitionare_cursor(i, y2);
+		printf("%c", (char)(205));
+	}
+
+	pozitionare_cursor(x1, y1);
+	printf("%c", (char)(201));
+
+	pozitionare_cursor(x2, y1);
+	printf("%c", (char)(187));
+
+	pozitionare_cursor(x1, y2);
+	printf("%c", (char)(200));
+
+	pozitionare_cursor(x2, y2);
+	printf("%c", (char)(188));
+}
+
 void dezvoltare_sarpe(sarpe& s)
 {
 	if (s.cap == NULL)
 	{
 		s.cap = new nod;
-		s.cap->x = 1;
-		s.cap->y = 1;
+		if (s.numar_sarpe == 1)
+		{
+			s.cap->x = 10;
+			s.cap->y = 10;
+			s.directie = 2;
+		}
+		else
+		{
+			s.cap->x = 40;
+			s.cap->y = 40;
+			s.directie = 4;
+		}
 		s.cap->valid = true;
 		s.cap->caracter = (char)219;
 		s.cap->orientare = s.directie;
@@ -110,6 +158,15 @@ void ascunde_cursor()
 	SetConsoleCursorInfo(h, &info);
 }
 
+void afiseaza_cursor()
+{
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO info;
+	info.dwSize = 100;
+	info.bVisible = TRUE;
+	SetConsoleCursorInfo(h, &info);
+}
+
 void afisare_meniu(int selectat)
 {
 	if (selectat == 1)
@@ -117,30 +174,30 @@ void afisare_meniu(int selectat)
 		pozitionare_cursor(0);
 		culoare(10);
 		printf("\n\n");
-		printf("     *********  *     *     *     *      *  ******                    \n"); culoare(9);
-		printf("     *       *  **    *    * *    *     *   *                         \n"); culoare(11);
-		printf("     *       *  * *   *   *   *   *    *    *                         \n"); culoare(15);
-		printf("     *       *  *  ** *  *     *  *   *     *                         \n"); culoare(14);
-		printf("     *          *    **  *     *  *  *      *                         \n"); culoare(13);
-		printf("     *          *     *  *     *  * * *     ******                    \n"); culoare(12);
-		printf("     *          *     *  *     *  **   *    *                         \n"); culoare(11);
-		printf("     *********  *     *  *******  *     *   *                         \n"); culoare(10);
-		printf("             *  *     *  *     *  *      *  *                         \n"); culoare(9);
-		printf("             *  *     *  *     *  *      *  *                         \n"); culoare(11);
-		printf("     *       *  *     *  *     *  *      *  *                         \n"); culoare(15);
-		printf("     *       *  *     *  *     *  *      *  *                         \n"); culoare(14);
-		printf("     *********  *     *  *     *  *      *  ******                    \n"); culoare(13);
-		printf("                                                                      \n"); culoare(12);
+		printf("\t      *********  *      *     *     *      *  ******    \n"); culoare(9);
+		printf("\t      *       *  **     *    * *    *     *   *    *    \n"); culoare(11);
+		printf("\t      *       *  * *    *   *   *   *    *    *         \n"); culoare(15);
+		printf("\t      *       *  *  *   *  *     *  *   *     *         \n"); culoare(14);
+		printf("\t      *          *   *  *  *     *  *  *      *         \n"); culoare(13);
+		printf("\t      *          *    * *  *     *  * * *     ******    \n"); culoare(12);
+		printf("\t      *          *     **  *     *  **   *    *         \n"); culoare(11);
+		printf("\t      *********  *      *  *******  *     *   *         \n"); culoare(10);
+		printf("\t              *  *      *  *     *  *      *  *         \n"); culoare(9);
+		printf("\t              *  *      *  *     *  *      *  *         \n"); culoare(11);
+		printf("\t      *       *  *      *  *     *  *      *  *         \n"); culoare(15);
+		printf("\t      *       *  *      *  *     *  *      *  *    *    \n"); culoare(14);
+		printf("\t      *********  *      *  *     *  *      *  ******    \n"); culoare(13);
+		printf("\t                                                        \n"); culoare(12);
 
 		culoare(10);
 
-		printf("                                                                      \n");
-		printf("                                                                      \n");
-		printf("                >      SINGUR      <                                  \n"); culoare(11);
-		printf("                                                                      \n");
-		printf("                       CONTRA                                         \n"); culoare(12);
-		printf("                                                                      \n");
-		printf("                       IESIRE                                         \n");
+		printf("\t                                                        \n");
+		printf("\t                                                        \n");
+		printf("\t                    >      SINGUR      <                \n"); culoare(11);
+		printf("\t                                                        \n");
+		printf("\t                           CONTRA                       \n"); culoare(12);
+		printf("\t                                                        \n");
+		printf("\t                           IESIRE                       \n");
 	}
 
 	if (selectat == 2)
@@ -148,66 +205,67 @@ void afisare_meniu(int selectat)
 		pozitionare_cursor(0);
 		culoare(10);
 		printf("\n\n");
-		printf("     *********  *     *     *     *      *  ******                    \n"); culoare(9);
-		printf("     *       *  **    *    * *    *     *   *                         \n"); culoare(11);
-		printf("     *       *  * *   *   *   *   *    *    *                         \n"); culoare(15);
-		printf("     *       *  *  ** *  *     *  *   *     *                         \n"); culoare(14);
-		printf("     *          *    **  *     *  *  *      *                         \n"); culoare(13);
-		printf("     *          *     *  *     *  * * *     ******                    \n"); culoare(12);
-		printf("     *          *     *  *     *  **   *    *                         \n"); culoare(11);
-		printf("     *********  *     *  *******  *     *   *                         \n"); culoare(10);
-		printf("             *  *     *  *     *  *      *  *                         \n"); culoare(9);
-		printf("             *  *     *  *     *  *      *  *                         \n"); culoare(11);
-		printf("     *       *  *     *  *     *  *      *  *                         \n"); culoare(15);
-		printf("     *       *  *     *  *     *  *      *  *                         \n"); culoare(14);
-		printf("     *********  *     *  *     *  *      *  ******                    \n"); culoare(13);
-		printf("                                                                      \n"); culoare(12);
+		printf("\t      *********  *      *     *     *      *  ******    \n"); culoare(11);
+		printf("\t      *       *  **     *    * *    *     *   *    *    \n"); culoare(15);
+		printf("\t      *       *  * *    *   *   *   *    *    *         \n"); culoare(14);
+		printf("\t      *       *  *  *   *  *     *  *   *     *         \n"); culoare(13);
+		printf("\t      *          *   *  *  *     *  *  *      *         \n"); culoare(12);
+		printf("\t      *          *    * *  *     *  * * *     ******    \n"); culoare(11);
+		printf("\t      *          *     **  *     *  **   *    *         \n"); culoare(10);
+		printf("\t      *********  *      *  *******  *     *   *         \n"); culoare(9);
+		printf("\t              *  *      *  *     *  *      *  *         \n"); culoare(11);
+		printf("\t              *  *      *  *     *  *      *  *         \n"); culoare(15);
+		printf("\t      *       *  *      *  *     *  *      *  *         \n"); culoare(14);
+		printf("\t      *       *  *      *  *     *  *      *  *    *    \n"); culoare(13);
+		printf("\t      *********  *      *  *     *  *      *  ******    \n"); culoare(12);
+		printf("\t                                                        \n"); culoare(9);
 
 		culoare(10);
 
-		printf("                                                                      \n");
-		printf("                                                                      \n");
-		printf("                       SINGUR                                         \n"); culoare(11);
-		printf("                                                                      \n");
-		printf("                >      CONTRA      <                                  \n"); culoare(12);
-		printf("                                                                      \n");
-		printf("                       IESIRE                                         \n");
+		printf("\t                                                        \n");
+		printf("\t                                                        \n");
+		printf("\t                           SINGUR                       \n"); culoare(11);
+		printf("\t                                                        \n");
+		printf("\t                    >      CONTRA      <                \n"); culoare(12);
+		printf("\t                                                        \n");
+		printf("\t                           IESIRE                       \n");
 	}
 
 	if (selectat == 3)
 	{
 		pozitionare_cursor(0);
-		culoare(10);
+		culoare(12);
 		printf("\n\n");
-		printf("     *********  *     *     *     *      *  ******                    \n"); culoare(9);
-		printf("     *       *  **    *    * *    *     *   *                         \n"); culoare(11);
-		printf("     *       *  * *   *   *   *   *    *    *                         \n"); culoare(15);
-		printf("     *       *  *  ** *  *     *  *   *     *                         \n"); culoare(14);
-		printf("     *          *    **  *     *  *  *      *                         \n"); culoare(13);
-		printf("     *          *     *  *     *  * * *     ******                    \n"); culoare(12);
-		printf("     *          *     *  *     *  **   *    *                         \n"); culoare(11);
-		printf("     *********  *     *  *******  *     *   *                         \n"); culoare(10);
-		printf("             *  *     *  *     *  *      *  *                         \n"); culoare(9);
-		printf("             *  *     *  *     *  *      *  *                         \n"); culoare(11);
-		printf("     *       *  *     *  *     *  *      *  *                         \n"); culoare(15);
-		printf("     *       *  *     *  *     *  *      *  *                         \n"); culoare(14);
-		printf("     *********  *     *  *     *  *      *  ******                    \n"); culoare(13);
-		printf("                                                                      \n"); culoare(12);
+		printf("\t      *********  *      *     *     *      *  ******    \n"); culoare(10);
+		printf("\t      *       *  **     *    * *    *     *   *    *    \n"); culoare(9);
+		printf("\t      *       *  * *    *   *   *   *    *    *         \n"); culoare(12);
+		printf("\t      *       *  *  *   *  *     *  *   *     *         \n"); culoare(15);
+		printf("\t      *          *   *  *  *     *  *  *      *         \n"); culoare(13);
+		printf("\t      *          *    * *  *     *  * * *     ******    \n"); culoare(14);
+		printf("\t      *          *     **  *     *  **   *    *         \n"); culoare(11);
+		printf("\t      *********  *      *  *******  *     *   *         \n"); culoare(10);
+		printf("\t              *  *      *  *     *  *      *  *         \n"); culoare(9);
+		printf("\t              *  *      *  *     *  *      *  *         \n"); culoare(11);
+		printf("\t      *       *  *      *  *     *  *      *  *         \n"); culoare(12);
+		printf("\t      *       *  *      *  *     *  *      *  *    *    \n"); culoare(13);
+		printf("\t      *********  *      *  *     *  *      *  ******    \n"); culoare(10);
+		printf("\t                                                        \n"); culoare(9);
 
 		culoare(10);
 
-		printf("                                                                      \n");
-		printf("                                                                      \n");
-		printf("                       SINGUR                                         \n"); culoare(11);
-		printf("                                                                      \n");
-		printf("                       CONTRA                                         \n"); culoare(12);
-		printf("                                                                      \n");
-		printf("                >      IESIRE      <                                  \n");
+		printf("\t                                                        \n");
+		printf("\t                                                        \n");
+		printf("\t                           SINGUR                       \n"); culoare(11);
+		printf("\t                                                        \n");
+		printf("\t                           CONTRA                       \n"); culoare(12);
+		printf("\t                                                        \n");
+		printf("\t                    >      IESIRE      <                \n");
 	}
 }
 
 void afisare_legenda(sarpe s1, sarpe s2)
 {
+	creare_chenar(54,2,75,7,2);
 	pozitionare_cursor(60, 2);
 	culoare(15);
 	printf("SCOR ACTUAL");
@@ -222,30 +280,41 @@ void afisare_legenda(sarpe s1, sarpe s2)
 		culoare(12);
 		printf("BOT: %d", s2.lungime);
 	}
+	else
+	{
+		pozitionare_cursor(55, 6);
+		printf("           ");
+	}
+
+	creare_chenar(54, 35, 75, 48,3);
+
+	pozitionare_cursor(61, 35);
+	culoare(15);
+	printf("COMENZI");
 
 	pozitionare_cursor(55, 37);
 	culoare(14);
-	printf("P - PAUZA");
+	printf(" P - PAUZA");
 
 	pozitionare_cursor(55, 39);
 	culoare(10);
-	printf("R - RESTART");
+	printf(" R - RESTART");
 
 	pozitionare_cursor(55, 41);
 	culoare(12);
-	printf("W - SUS");
+	printf(" W - SUS");
 
 	pozitionare_cursor(55, 43);
 	culoare(13);
-	printf("A - STANGA");
+	printf(" A - STANGA");
 
 	pozitionare_cursor(55, 45);
 	culoare(11);
-	printf("S - JOS");
+	printf(" S - JOS");
 
 	pozitionare_cursor(55, 47);
 	culoare(15);
-	printf("D - DREAPTA");
+	printf(" D - DREAPTA");
 }
 
 void actualizare_legenda(sarpe s1, sarpe s2)
@@ -387,11 +456,45 @@ int coliziune(sarpe s, tipHarta harta[][LATIME_HARTA], int supraPunere = 0)				/
 		if (c->x == s.cap->x && c->y == s.cap->y)
 			return c->orientare;
 
-		if (harta[s.cap->y][s.cap->x].info < 5 && harta[s.cap->y][s.cap->x].info != 0)
+		if (harta[s.cap->y][s.cap->x].info < 5 && harta[s.cap->y][s.cap->x].info > 0)
 			return harta[s.cap->y][s.cap->x].info;
 		c = c->urm;
 	}
 	return 0;
+}
+
+void misca_sarpe(sarpe& s, tipHarta harta[][LATIME_HARTA], int& sfarsitJoc)
+{
+	nod* c = s.coada;
+
+	completare_harta(c->x, c->y, harta);
+
+	while (c->prec)
+	{
+		c->x = c->prec->x;
+		c->y = c->prec->y;
+		c->orientare = c->prec->orientare;
+		c = c->prec;
+	}
+
+	switch (s.directie)
+	{
+	case 1:	--s.cap->y;
+		break;
+	case 2:	++s.cap->x;
+		break;
+	case 3:	++s.cap->y;
+		break;
+	case 4:	--s.cap->x;
+		break;
+	default:
+		break;
+	}
+
+	if (harta[s.cap->y][s.cap->x].info != 0 && coliziune(s, harta, harta[s.cap->y][s.cap->x].info) < 5)
+		sfarsitJoc = s.numar_sarpe;
+
+	s.cap->orientare = s.directie;
 }
 
 void afisare_sarpe(sarpe s, tipHarta harta[][LATIME_HARTA])
@@ -555,37 +658,129 @@ void colectare_fruct(sarpe& s, fruct& f, tipHarta harta[][LATIME_HARTA])
 	}
 }
 
-void misca_sarpe(sarpe& s, tipHarta harta[][LATIME_HARTA], int& sfarsitJoc)
+void importare_scor(scoruri s[])
 {
-	nod* c = s.coada;
-
-	completare_harta(c->x, c->y, harta);
-
-	while (c->prec)
+	ifstream f;
+	f.open("scor.txt");
+	if (f.good())
 	{
-		c->x = c->prec->x;
-		c->y = c->prec->y;
-		c->orientare = c->prec->orientare;
-		c = c->prec;
+		unsigned short k = 0;
+		while (!f.eof())
+		{
+			f >> s[k].nume;
+			f >> s[k].scor;
+			++k;
+		}
 	}
-
-	switch (s.directie)
+	else
 	{
-	case 1:	--s.cap->y;
-		break;
-	case 2:	++s.cap->x;
-		break;
-	case 3:	++s.cap->y;
-		break;
-	case 4:	--s.cap->x;
-		break;
-	default:
-		break;
+		ofstream g;
+		g.open(("scor.txt"));
+		unsigned short k = 0;
+		while (k<5)
+		{
+			g << "nimeni";
+			g << "\n";
+			g << 0;
+			g << "\n";
+			++k;
+		}
+		g.close();
 	}
-
-	if (harta[s.cap->y][s.cap->x].info != 0 && coliziune(s, harta, harta[s.cap->y][s.cap->x].info) < 5)
-		sfarsitJoc = s.numar_sarpe;
-
-	s.cap->orientare = s.directie;
+	f.close();
 }
 
+void salvare_scor(scoruri s[])
+{
+	ofstream f;
+	f.open("scor.txt", ios::out | ios::trunc);
+	unsigned short k = 0;
+	while (k<5)
+	{
+		_strupr(s[k].nume);
+		f << s[k].nume;
+		f << "\n";
+		f << s[k].scor;
+		f << "\n";
+		++k;
+	}
+	f.close();
+}
+
+void afisare_scor(scoruri s[])
+{
+	creare_chenar(54, 10, 75, 17,6);
+	pozitionare_cursor(61, 10);
+	culoare(15);
+	printf("RECORDURI");
+
+	unsigned short k = 0;
+	while (k < 5)
+	{
+		pozitionare_cursor(55, 12 + k);
+		culoare(14 - k);
+		if (strlen(s[k].nume)<7)
+			printf("%d.%s\t\t%d\n", k + 1, s[k].nume, s[k].scor);
+		else
+			printf("%d.%s\t%d\n", k + 1, s[k].nume, s[k].scor);
+		++k;
+	}
+}
+
+void actualizare_scor(scoruri s[], scoruri nou)
+{
+	scoruri aux;
+
+	unsigned short k = 0;
+	while (s[k].scor >= nou.scor)
+		++k;
+
+	for (int i = 4; i > k; --i)
+	{
+		s[i] = s[i - 1];
+	}
+
+	s[k] = nou;
+}
+
+void inregistrare_scor(scoruri &a, sarpe s)
+{
+	creare_chenar(54, 18, 75, 20,8);
+	pozitionare_cursor(55, 19);
+	culoare(15);
+	printf("NUME:");
+	culoare(10);
+	afiseaza_cursor();
+	a.scor = s.lungime;
+	
+		
+	pozitionare_cursor(60, 19);
+	printf("          ");
+	pozitionare_cursor(60, 19);
+
+		//scanf("%14s", a.nume);
+	fgets(a.nume, 14, stdin);
+
+	a.nume[strlen(a.nume) - 1] = '\0';
+
+	for (int i = 0; i < 15; ++i)
+		if (a.nume[i] == ' ')
+			strcpy(a.nume + i, "\0");
+
+	if (a.nume[0] == '\0')
+		strcpy(a.nume, "ANONIM");
+
+	
+	ascunde_cursor();
+	pozitionare_cursor(55, 19);
+	printf("                        ");
+	pozitionare_cursor(55, 20);
+	printf("                        ");
+}
+
+void curata_ecran()
+{
+	pozitionare_cursor(0,0);
+	for (int i = 0; i <= 52; ++i)
+		printf("                                                                                  ");
+}
