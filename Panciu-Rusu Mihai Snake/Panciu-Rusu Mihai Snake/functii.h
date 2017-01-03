@@ -4,6 +4,7 @@
 #include <ctime>
 #include <fstream>
 #include <string.h>
+#include <mmsystem.h>
 
 #include <random>
 
@@ -23,6 +24,7 @@ struct nod {
 	int caracter;
 	int orientare = 0;
 	bool valid = false;
+	int culoareNod = 15;
 	nod* urm;
 	nod* prec;
 };
@@ -31,8 +33,13 @@ struct sarpe {
 	int directie;
 	int lungime = 0;
 	int numar_sarpe;
+	int culoareSarpe = 15;
 	nod* cap;
 	nod* coada;
+
+	int timpPutere1 = 0;
+	int timpPutere2 = 0;
+	int timpPutere3 = 0;
 };
 
 struct fruct {
@@ -62,11 +69,11 @@ void setare_font(int dimensiuneX, int dimensiuneY)
 {
 	CONSOLE_FONT_INFOEX cfi;
 	cfi.cbSize = sizeof(cfi);
-	cfi.nFont = 0;
 	cfi.dwFontSize.X = dimensiuneX;										 // Latime
 	cfi.dwFontSize.Y = dimensiuneY;										 // Inaltime
 	cfi.FontFamily = FF_DONTCARE;
 	cfi.FontWeight = FW_NORMAL;
+	cfi.nFont = 0;
 	SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
 }
 
@@ -128,6 +135,7 @@ void dezvoltare_sarpe(sarpe& s)
 		s.cap->valid = true;
 		s.cap->caracter = (char)219;
 		s.cap->orientare = s.directie;
+		s.cap->culoareNod = s.culoareSarpe;
 
 		s.cap->urm = 0;
 		s.cap->prec = 0;
@@ -140,6 +148,7 @@ void dezvoltare_sarpe(sarpe& s)
 		fragment->y = s.coada->y;
 		fragment->caracter = (char)219;
 		fragment->orientare = s.coada->orientare;
+		fragment->culoareNod = s.culoareSarpe;
 
 		fragment->urm = 0;
 		fragment->prec = s.coada;
@@ -189,8 +198,14 @@ void afisare_meniu(int selectat)
 		printf("\t      *********  *      *  *     *  *      *  ******    \n"); culoare(13);
 		printf("\t                                                        \n"); culoare(12);
 
-		culoare(10);
+		culoare(15);
+		printf("\t                                                        \n");
+		printf("\t                                                        \n");
+		printf("\t                              W                         \n");
+		printf("\t                            (SUS)                       \n");
 
+
+		culoare(10);
 		printf("\t                                                        \n");
 		printf("\t                                                        \n");
 		printf("\t                    >      SINGUR      <                \n"); culoare(11);
@@ -198,6 +213,12 @@ void afisare_meniu(int selectat)
 		printf("\t                           CONTRA                       \n"); culoare(12);
 		printf("\t                                                        \n");
 		printf("\t                           IESIRE                       \n");
+
+		culoare(15);
+		printf("\t                                                        \n");
+		printf("\t                                                        \n");
+		printf("\t                            (JOS)                       \n");
+		printf("\t                              S                         \n");
 	}
 
 	if (selectat == 2)
@@ -220,8 +241,13 @@ void afisare_meniu(int selectat)
 		printf("\t      *********  *      *  *     *  *      *  ******    \n"); culoare(12);
 		printf("\t                                                        \n"); culoare(9);
 
-		culoare(10);
+		culoare(15);
+		printf("\t                                                        \n");
+		printf("\t                                                        \n");
+		printf("\t                              W                         \n");
+		printf("\t                            (SUS)                       \n");
 
+		culoare(10);
 		printf("\t                                                        \n");
 		printf("\t                                                        \n");
 		printf("\t                           SINGUR                       \n"); culoare(11);
@@ -229,6 +255,12 @@ void afisare_meniu(int selectat)
 		printf("\t                    >      CONTRA      <                \n"); culoare(12);
 		printf("\t                                                        \n");
 		printf("\t                           IESIRE                       \n");
+
+		culoare(15);
+		printf("\t                                                        \n");
+		printf("\t                                                        \n");
+		printf("\t                            (JOS)                       \n");
+		printf("\t                              S                         \n");
 	}
 
 	if (selectat == 3)
@@ -251,8 +283,13 @@ void afisare_meniu(int selectat)
 		printf("\t      *********  *      *  *     *  *      *  ******    \n"); culoare(10);
 		printf("\t                                                        \n"); culoare(9);
 
-		culoare(10);
+		culoare(15);
+		printf("\t                                                        \n");
+		printf("\t                                                        \n");
+		printf("\t                              W                         \n");
+		printf("\t                            (SUS)                       \n");
 
+		culoare(10);
 		printf("\t                                                        \n");
 		printf("\t                                                        \n");
 		printf("\t                           SINGUR                       \n"); culoare(11);
@@ -260,12 +297,25 @@ void afisare_meniu(int selectat)
 		printf("\t                           CONTRA                       \n"); culoare(12);
 		printf("\t                                                        \n");
 		printf("\t                    >      IESIRE      <                \n");
+
+		culoare(15);
+		printf("\t                                                        \n");
+		printf("\t                                                        \n");
+		printf("\t                            (JOS)                       \n");
+		printf("\t                              S                         \n");
 	}
+
+	pozitionare_cursor(1, 50);
+	culoare(15);
+	printf("REALIZAT DE: PANCIU-RUSU MIHAI");
+
+	pozitionare_cursor(65, 50);
+	printf("AN: 2016-2017");
 }
 
 void afisare_legenda(sarpe s1, sarpe s2)
 {
-	creare_chenar(54,2,75,7,2);
+	creare_chenar(54,2,75,7,5);
 	pozitionare_cursor(60, 2);
 	culoare(15);
 	printf("SCOR ACTUAL");
@@ -286,33 +336,37 @@ void afisare_legenda(sarpe s1, sarpe s2)
 		printf("           ");
 	}
 
-	creare_chenar(54, 35, 75, 48,3);
+	creare_chenar(54, 34, 75, 49,3);
 
-	pozitionare_cursor(61, 35);
+	pozitionare_cursor(61, 34);
 	culoare(15);
 	printf("COMENZI");
 
-	pozitionare_cursor(55, 37);
+	pozitionare_cursor(55, 36);
+	culoare(9);
+	printf(" M - MUT / PORNIT");
+
+	pozitionare_cursor(55, 38);
 	culoare(14);
 	printf(" P - PAUZA");
 
-	pozitionare_cursor(55, 39);
+	pozitionare_cursor(55, 40);
 	culoare(10);
 	printf(" R - RESTART");
 
-	pozitionare_cursor(55, 41);
+	pozitionare_cursor(55, 42);
 	culoare(12);
 	printf(" W - SUS");
 
-	pozitionare_cursor(55, 43);
+	pozitionare_cursor(55, 44);
 	culoare(13);
 	printf(" A - STANGA");
 
-	pozitionare_cursor(55, 45);
+	pozitionare_cursor(55, 46);
 	culoare(11);
 	printf(" S - JOS");
 
-	pozitionare_cursor(55, 47);
+	pozitionare_cursor(55, 48);
 	culoare(15);
 	printf(" D - DREAPTA");
 }
@@ -420,8 +474,26 @@ void afisare_fruct(tipHarta harta[][LATIME_HARTA], fruct f)
 	harta[f.y][f.x].info = f.tip;
 	harta[f.y][f.x].caracter = (char)178;
 	pozitionare_cursor(f.x, f.y);
-	culoare(14);
-	printf("M");
+	
+	switch (f.tip)
+	{
+	case 11:
+		culoare(15);
+		printf("F");
+		break;
+	case 15:
+		culoare(11);
+		printf("I");
+		break;
+	case 17:
+		culoare(13);
+		printf("B");
+		break;
+	default:
+		culoare(14);
+		printf("M");
+		break;
+	}
 }
 
 void generare_fruct(fruct& f, tipHarta harta[][LATIME_HARTA], int tip=10)
@@ -441,24 +513,29 @@ void generare_fruct(fruct& f, tipHarta harta[][LATIME_HARTA], int tip=10)
 		f.y = randY(gen);
 	}
 
-	f.tip = tip;
+	uniform_int_distribution<> tipFruct(0, 20);
+	f.tip = 10+tipFruct(gen);
 }
 
 int coliziune(sarpe s, tipHarta harta[][LATIME_HARTA], int supraPunere = 0)				//daca acesta se loveste de sine returneaza orientarea partii de care s-a lovit
 {
-	if (supraPunere != 0)
-		return harta[s.cap->y][s.cap->x].info;
-
-	nod* c = s.cap;
-	c = c->urm;
-	while (c)
+	if (!s.timpPutere1)
 	{
-		if (c->x == s.cap->x && c->y == s.cap->y)
-			return c->orientare;
-
-		if (harta[s.cap->y][s.cap->x].info < 5 && harta[s.cap->y][s.cap->x].info > 0)
+		if (supraPunere != 0)
 			return harta[s.cap->y][s.cap->x].info;
+
+		nod* c = s.cap;
 		c = c->urm;
+
+		while (c)
+		{
+			if (c->x == s.cap->x && c->y == s.cap->y)
+				return c->orientare;
+
+			if (harta[s.cap->y][s.cap->x].info < 5 && harta[s.cap->y][s.cap->x].info > 0)
+				return harta[s.cap->y][s.cap->x].info;
+			c = c->urm;
+		}
 	}
 	return 0;
 }
@@ -474,8 +551,14 @@ void misca_sarpe(sarpe& s, tipHarta harta[][LATIME_HARTA], int& sfarsitJoc)
 		c->x = c->prec->x;
 		c->y = c->prec->y;
 		c->orientare = c->prec->orientare;
+		c->caracter = c->prec->caracter;
 		c = c->prec;
 	}
+
+	s.coada->caracter = (char)(176);
+	s.coada->prec->caracter = (char)(177);
+	if(s.lungime>3)
+		s.coada->prec->prec->caracter = (char)(178);
 
 	switch (s.directie)
 	{
@@ -490,7 +573,20 @@ void misca_sarpe(sarpe& s, tipHarta harta[][LATIME_HARTA], int& sfarsitJoc)
 	default:
 		break;
 	}
+	
+	if (s.cap->x == LATIME_HARTA)
+		s.cap->x = 0;
+	else
+	if (s.cap->x == -1)
+		s.cap->x = LATIME_HARTA-1;
 
+	if (s.cap->y == INALTIME_HARTA)
+		s.cap->y = 0;
+	else
+	if (s.cap->y == -1)
+		s.cap->y = INALTIME_HARTA-1;
+
+	if(!s.timpPutere1)
 	if (harta[s.cap->y][s.cap->x].info != 0 && coliziune(s, harta, harta[s.cap->y][s.cap->x].info) < 5)
 		sfarsitJoc = s.numar_sarpe;
 
@@ -500,13 +596,10 @@ void misca_sarpe(sarpe& s, tipHarta harta[][LATIME_HARTA], int& sfarsitJoc)
 void afisare_sarpe(sarpe s, tipHarta harta[][LATIME_HARTA])
 {
 	nod* c = s.cap;
-	if (s.numar_sarpe == 1)
-		culoare(10);
-	else
-		culoare(12);
-
+	culoare(s.culoareSarpe);
 	while (c)
 	{
+		//culoare(c->culoareNod);
 		harta[c->y][c->x].caracter = c->caracter;
 		harta[c->y][c->x].info = c->orientare;
 		pozitionare_cursor(c->x, c->y);
@@ -569,6 +662,9 @@ void bot_sarpe(sarpe& s, fruct fct, tipHarta harta[][LATIME_HARTA])
 			else
 				if (s.cap->y > fct.y && s.directie != 3)
 					s.directie = 1;
+
+	if (s.timpPutere1)
+		return;
 
 	++d[s.directie];
 
@@ -653,6 +749,14 @@ void colectare_fruct(sarpe& s, fruct& f, tipHarta harta[][LATIME_HARTA])
 	if (s.cap->x == f.x && s.cap->y == f.y)
 	{
 		dezvoltare_sarpe(s);
+		if (f.tip == 11)
+			s.timpPutere1 += 100;
+		
+		if (f.tip == 15)
+			s.timpPutere2 += 50;
+
+		if (f.tip == 17)
+			s.timpPutere3 += 100;
 
 		generare_fruct(f,harta);
 	}
@@ -709,15 +813,15 @@ void salvare_scor(scoruri s[])
 
 void afisare_scor(scoruri s[])
 {
-	creare_chenar(54, 10, 75, 17,6);
-	pozitionare_cursor(61, 10);
+	creare_chenar(54, 23, 75, 30,6);
+	pozitionare_cursor(61, 23);
 	culoare(15);
 	printf("RECORDURI");
 
 	unsigned short k = 0;
 	while (k < 5)
 	{
-		pozitionare_cursor(55, 12 + k);
+		pozitionare_cursor(55, 25 + k);
 		culoare(14 - k);
 		if (strlen(s[k].nume)<7)
 			printf("%d.%s\t\t%d\n", k + 1, s[k].nume, s[k].scor);
@@ -745,8 +849,8 @@ void actualizare_scor(scoruri s[], scoruri nou)
 
 void inregistrare_scor(scoruri &a, sarpe s)
 {
-	creare_chenar(54, 18, 75, 20,8);
-	pozitionare_cursor(55, 19);
+	creare_chenar(54, 31, 75, 33,8);
+	pozitionare_cursor(55, 32);
 	culoare(15);
 	printf("NUME:");
 	culoare(10);
@@ -754,9 +858,9 @@ void inregistrare_scor(scoruri &a, sarpe s)
 	a.scor = s.lungime;
 	
 		
-	pozitionare_cursor(60, 19);
+	pozitionare_cursor(60, 32);
 	printf("          ");
-	pozitionare_cursor(60, 19);
+	pozitionare_cursor(60, 32);
 
 		//scanf("%14s", a.nume);
 	fgets(a.nume, 14, stdin);
@@ -772,10 +876,6 @@ void inregistrare_scor(scoruri &a, sarpe s)
 
 	
 	ascunde_cursor();
-	pozitionare_cursor(55, 19);
-	printf("                        ");
-	pozitionare_cursor(55, 20);
-	printf("                        ");
 }
 
 void curata_ecran()
@@ -783,4 +883,213 @@ void curata_ecran()
 	pozitionare_cursor(0,0);
 	for (int i = 0; i <= 52; ++i)
 		printf("                                                                                  ");
+}
+
+void afisare_puteri()
+{
+	creare_chenar(54, 8, 64, 15, 2);
+	creare_chenar(65, 8, 75, 15, 4);
+	pozitionare_cursor(57,8);
+	culoare(15);
+	printf("PUTERI");
+	pozitionare_cursor(67, 8);
+	printf("PUTERI");
+
+	pozitionare_cursor(56, 10);
+	printf("F:");
+	pozitionare_cursor(67, 10);
+	printf("F:");
+
+	culoare(11);
+	pozitionare_cursor(56, 12);
+	printf("I:");
+	pozitionare_cursor(67, 12);
+	printf("I:");
+
+	culoare(13);
+	pozitionare_cursor(56, 14);
+	printf("B:");
+	pozitionare_cursor(67, 14);
+	printf("B:");
+}
+
+void actualizeaza_puteri(sarpe s1, sarpe s2)
+{
+	culoare(15);
+	if (s1.timpPutere1)
+	{
+		pozitionare_cursor(59, 10);
+		printf("   ");
+		pozitionare_cursor(59, 10);
+		printf("%d", s1.timpPutere1);
+	}
+	else
+	{
+		pozitionare_cursor(59, 10);
+		printf("0  ");
+	}
+
+	if (s2.timpPutere1)
+	{
+		pozitionare_cursor(70, 10);
+		printf("   ");
+		pozitionare_cursor(70, 10);
+		printf("%d", s2.timpPutere1);
+	}
+	else
+	{
+		pozitionare_cursor(70, 10);
+		printf("0  ");
+	}
+
+	culoare(11);
+	if (s1.timpPutere2)
+	{
+		pozitionare_cursor(59, 12);
+		printf("   ");
+		pozitionare_cursor(59, 12);
+		printf("%d", s1.timpPutere2);
+	}
+	else
+	{
+		pozitionare_cursor(59, 12);
+		printf("0  ");
+	}
+
+	if (s2.timpPutere2)
+	{
+		pozitionare_cursor(70, 12);
+		printf("   ");
+		pozitionare_cursor(70, 12);
+		printf("%d", s2.timpPutere2);
+	}
+	else
+	{
+		pozitionare_cursor(70, 12);
+		printf("0  ");
+	}
+
+	culoare(13);
+
+	if (s1.timpPutere3)
+	{
+		pozitionare_cursor(59, 14);
+		printf("   ");
+		pozitionare_cursor(59, 14);
+		printf("%d", s1.timpPutere3);
+	}
+	else
+	{
+		pozitionare_cursor(59, 14);
+		printf("0  ");
+	}
+
+	if (s2.timpPutere3)
+	{
+		pozitionare_cursor(70, 14);
+		printf("   ");
+		pozitionare_cursor(70, 14);
+		printf("%d", s2.timpPutere3);
+	}
+	else
+	{
+		pozitionare_cursor(70, 14);
+		printf("0  ");
+	} 
+}
+
+void afisare_joc_terminat(int sfarsitJoc)
+{
+	pozitionare_cursor(0,10);
+	culoare(11);
+
+	printf("                                                  \n");
+	printf("        ___   __                 _  _     _       \n");
+	printf("       / __| / _| __ _  _ _  ___(_)| |_  | |      \n");
+	printf("       \\__ \\|  _|/ _` || '_|(_-<| ||  _| |_|      \n");
+	printf("       |___/|_|  \\__,_||_|  /__/|_| \\__| (_)      \n");
+	printf("                                                   \n");
+	printf("                                                   \n");
+	printf("                                                   \n");
+	printf("                                                   \n");
+
+	if (sfarsitJoc == 1)
+	{
+		pozitionare_cursor(20, 16);
+		culoare(12);
+		printf("AI PIERDUT!");
+	}
+
+	if (sfarsitJoc == 2)
+	{
+		pozitionare_cursor(20, 16);
+		culoare(10);
+		printf("AI CASTIGAT!");
+	}
+
+	if (sfarsitJoc == 3)
+	{
+		pozitionare_cursor(23, 16);
+		culoare(14);
+		printf("REMIZA!");
+	}
+
+	pozitionare_cursor(0, 50);
+}
+
+void schimba_culoare_sarpe(sarpe& s1, sarpe& s2)
+{
+	if (s2.timpPutere3 != 0 && s2.timpPutere3 % 10 == 0)
+		if (s1.culoareSarpe == 10)
+			s1.culoareSarpe = 13;
+		else
+			s1.culoareSarpe = 10;
+	else
+	if (s1.timpPutere1!=0 && s1.timpPutere1 % 10 == 0)
+		if (s1.culoareSarpe == 10)
+			s1.culoareSarpe = 15;
+		else
+			s1.culoareSarpe = 10;
+
+	if (!s1.timpPutere1 && !s2.timpPutere3)
+		s1.culoareSarpe = 10;
+
+
+	if (s1.timpPutere3!=0 && s1.timpPutere3 % 10 == 0)
+		if (s2.culoareSarpe == 12)
+			s2.culoareSarpe = 13;
+		else
+			s2.culoareSarpe = 12;
+	else
+	if (s2.timpPutere1 != 0 && s2.timpPutere1 % 10 == 0)
+		if (s2.culoareSarpe == 12)
+			s2.culoareSarpe = 15;
+		else
+			s2.culoareSarpe = 12;
+
+	if (!s2.timpPutere1 && !s1.timpPutere3)
+		s2.culoareSarpe = 12;
+}
+
+void explicatie_puteri()
+{
+	creare_chenar(54, 16, 75, 22, 8);
+	pozitionare_cursor(61, 16);
+	culoare(15);
+	printf("DENUMIRI");
+
+	pozitionare_cursor(56, 18);
+	printf("F - FANTOMA");
+
+	pozitionare_cursor(56, 19);
+	culoare(11);
+	printf("I - INCETINESTE");
+
+	pozitionare_cursor(56, 20);
+	culoare(13);
+	printf("B - BLOCHEAZA");
+
+	pozitionare_cursor(56, 21);
+	culoare(14);
+	printf("M - MANCARE");
 }
