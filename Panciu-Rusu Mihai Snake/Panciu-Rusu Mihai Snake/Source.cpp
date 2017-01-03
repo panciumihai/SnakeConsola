@@ -100,6 +100,7 @@ void joc_singur()
 void joc_dublu()
 {
 	afisare_puteri();
+	explicatie_puteri();
 	while (!sfarsitJoc)
 	{
 		schimba_directia(sarpe1);
@@ -142,7 +143,6 @@ void start_joc()
 {
 	curata_ecran();
 	afisare_scor(clasament);
-	explicatie_puteri();
 	if (joc == 1)
 	{
 		generare_fruct(f, harta);
@@ -234,31 +234,6 @@ void prima_pagina(sarpe& s1, sarpe& s2, int& tipJoc)
 	}
 }
 
-/*
-void craniu()
-{
-	printf("_______________________________________________________");
-	printf("	/ \");
-printf(" | Ha ha, you're dead                    |");
-printf("		\_________              _______________________________ /");
-	printf("	\_         __ / ___-------- - __");
-		printf("	\      _ / / \_");
-			printf("	\ / / \");
-	printf("	| / | _    _ \          \");
-				printf("	| | / / \ / \ | \");
-	printf("	| | || || || |");
-					printf("		| | | \_//\\_/ |           |        ");
-						printf("		| | | _ | (|| ) | _______ | |");
-							printf("	| | | || | _ / / |");
-								printf("	\ \ | _________ || \ / / /");
-									printf("	\ \_ | _ | _ | _ | _ | / | _ / ___ /");
-										printf("	\__>       _ _ / _ _ / |");
-											printf("	. | _ | _ | _ | _ | |");
-												printf("	| /");
-												printf("	| __________ /");
-
-}
-*/
 int main()
 {                                                                          
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -278,7 +253,7 @@ int main()
 	sarpe2.culoareSarpe = 12;
 
 	importare_scor(clasament);
-	//porneste_sunet();
+	porneste_sunet();
 
 	while (!joc)
 	{

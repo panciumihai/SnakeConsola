@@ -224,7 +224,7 @@ void afisare_meniu(int selectat)
 	if (selectat == 2)
 	{
 		pozitionare_cursor(0);
-		culoare(10);
+		culoare(15);
 		printf("\n\n");
 		printf("\t      *********  *      *     *     *      *  ******    \n"); culoare(11);
 		printf("\t      *       *  **     *    * *    *     *   *    *    \n"); culoare(15);
@@ -270,7 +270,7 @@ void afisare_meniu(int selectat)
 		printf("\n\n");
 		printf("\t      *********  *      *     *     *      *  ******    \n"); culoare(10);
 		printf("\t      *       *  **     *    * *    *     *   *    *    \n"); culoare(9);
-		printf("\t      *       *  * *    *   *   *   *    *    *         \n"); culoare(12);
+		printf("\t      *       *  * *    *   *   *   *    *    *         \n"); culoare(11);
 		printf("\t      *       *  *  *   *  *     *  *   *     *         \n"); culoare(15);
 		printf("\t      *          *   *  *  *     *  *  *      *         \n"); culoare(13);
 		printf("\t      *          *    * *  *     *  * * *     ******    \n"); culoare(14);
@@ -599,7 +599,6 @@ void afisare_sarpe(sarpe s, tipHarta harta[][LATIME_HARTA])
 	culoare(s.culoareSarpe);
 	while (c)
 	{
-		//culoare(c->culoareNod);
 		harta[c->y][c->x].caracter = c->caracter;
 		harta[c->y][c->x].info = c->orientare;
 		pozitionare_cursor(c->x, c->y);
