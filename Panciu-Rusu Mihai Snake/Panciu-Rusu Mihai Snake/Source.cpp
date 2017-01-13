@@ -1,9 +1,5 @@
 #include "functii.h"
 
-HANDLE hConsole;
-CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-WORD saved_attributes;
-
 RECT dimensiuneOriginala;
 
 int sfarsitJoc = 0;
@@ -151,6 +147,8 @@ void start_joc()
 		dezvoltare_sarpe(sarpe1);
 		dezvoltare_sarpe(sarpe1);
 
+		sarpe1.lungime -= 3;
+
 		initializare_harta(harta);
 
 		afisare_harta(harta);
@@ -169,6 +167,9 @@ void start_joc()
 		dezvoltare_sarpe(sarpe2);
 		dezvoltare_sarpe(sarpe2);
 		dezvoltare_sarpe(sarpe2);
+
+		sarpe1.lungime -= 3;
+		sarpe2.lungime -= 3;
 
 		initializare_harta(harta);
 
@@ -236,12 +237,6 @@ void prima_pagina(sarpe& s1, sarpe& s2, int& tipJoc)
 
 int main()
 {                                                                          
-	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-	GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
-	saved_attributes = consoleInfo.wAttributes;
-	
-
 	setare_font(14, 12);
 	ascunde_cursor();
 	redimensionare_consola(dimensiuneOriginala);
@@ -273,5 +268,6 @@ int main()
 		curata_ecran();
 	}
 
+	restabileste_setari(dimensiuneOriginala);
 	return EXIT_SUCCESS;
 }
